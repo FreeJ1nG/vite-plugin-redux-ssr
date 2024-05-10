@@ -1,0 +1,19 @@
+{
+  "type": "module",
+  "author": "FreeJ1nG",
+  "license": "ISC",
+  "private": true,
+  "name": "root",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "lint": "eslint .",
+    "clean": "rm -rf node_modules && rm pnpm-lock.yaml"
+  },
+  "devDependencies": {
+    "eslint": "^8.57.0",
+    "eslint-config-rational": "^5.0.13",
+    "typescript": "^5.4.5"
+  }
+}

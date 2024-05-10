@@ -1,0 +1,31 @@
+{
+  "name": "vite-plugin-redux-ssr",
+  "type": "module",
+  "license": "ISC",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "rm -rf lib && tsc -p ./tsconfig.build.json"
+  },
+  "types": "./lib/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/index.d.ts",
+      "default": "./lib/index.js"
+    }
+  },
+  "keywords": [],
+  "peerDependencies": {
+    "@reduxjs/toolkit": "^2.2.4",
+    "react-redux": "^9.1.2",
+    "redux": "^5.0.1",
+    "vite": "^5.2.11"
+  },
+  "devDependencies": {
+    "@reduxjs/toolkit": "^2.2.4",
+    "react-redux": "^9.1.2",
+    "redux": "^5.0.1",
+    "vite": "^5.2.11"
+  }
+}
