@@ -6,7 +6,7 @@ export interface Options<AppStore extends Store> {
    * A store creator function that returns the type that
    * matches the store on the consumer's side
    */
-  makeStore: (preloadedState?: unknown) => AppStore;
+  makeStore: (preloadedState?: ReturnType<AppStore["getState"]>) => AppStore;
 }
 
 /**
@@ -17,7 +17,7 @@ export interface Options<AppStore extends Store> {
 export const plugin = <AppStore extends Store>({
   makeStore,
 }: Options<AppStore>): VitePlugin => {
-  let initialData: Record<string, unknown> = {};
+  let initialData: ReturnType<AppStore["getState"]> | undefined = undefined;
   return {
     name: "vite-plugin-redux-ssr",
     enforce: "pre",

@@ -26,6 +26,8 @@ app.use("*", async (req, res) => {
 
     let html = template.replace(`<!--ssr-outlet-->`, appHtml);
 
+    console.log(html);
+
     res.status(200).set({ "Content-Type": "text/html" }).send(html);
   } catch (e) {
     // @ts-ignore

@@ -2,7 +2,7 @@ import api from "./api.js";
 import { reducer } from "./reducer.js";
 import { Action, ThunkDispatch, configureStore } from "@reduxjs/toolkit";
 
-export const makeStore = (preloadedState: ReturnType<typeof reducer>) => {
+export const makeStore = (preloadedState?: ReturnType<typeof reducer>) => {
   const store = configureStore({
     preloadedState,
     reducer,
