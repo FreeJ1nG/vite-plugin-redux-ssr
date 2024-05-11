@@ -1,7 +1,7 @@
 import { type Store } from 'redux';
 import { type Plugin as VitePlugin } from 'vite';
 
-import { type InitStoreMetadata, STORE_DATA_SCRIPT_TAG } from './utils.js';
+import { type InitStoreMetadata, STORE_DATA_SCRIPT_TAG, type StoreCreator } from './utils.js';
 
 /**
  * Options for the plugin
@@ -11,7 +11,7 @@ export interface Options<AppStore extends Store> {
    * A store creator function that returns the type that
    * matches the store on the consumer's side
    */
-  makeStore: (preloadedState?: ReturnType<AppStore['getState']>) => AppStore;
+  makeStore: StoreCreator<AppStore>;
   /**
    * Contains metadata for which store initialization will occur on each page
    */
