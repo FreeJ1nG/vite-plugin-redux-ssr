@@ -1,4 +1,6 @@
-import { Pokemon, PokemonDetail } from "@/models/pokemon";
+/* eslint-disable jsdoc/require-jsdoc */
+
+import { type Pokemon, type PokemonDetail } from '@/models/pokemon.js';
 
 export interface GetPokemonsParam {
   limit: number;

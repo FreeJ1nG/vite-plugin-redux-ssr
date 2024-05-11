@@ -1,18 +1,23 @@
-import api from "@/modules/redux/api.js";
-import {
-  GetPokemonDetailParam,
-  GetPokemonDetailResponse,
-  GetPokemonsParam,
-  GetPokemonsResponse,
-} from "./types.js";
+import api from '@/modules/redux/api.js';
 
+import {
+  type GetPokemonDetailParam,
+  type GetPokemonDetailResponse,
+  type GetPokemonsParam,
+  type GetPokemonsResponse,
+} from './types.js';
+
+/**
+ * Any endpoints relating to pokemons will be defined here
+ * Other advanced configurations are possible if needed
+ */
 export const pokemonApi = api.injectEndpoints({
   overrideExisting: import.meta.env.DEV,
   endpoints: (builder) => ({
     getPokemons: builder.query<GetPokemonsResponse, GetPokemonsParam>({
       query: ({ limit, offset }) => ({
         url: `/pokemon?limit=${limit}&offset=${offset}`,
-        method: "GET",
+        method: 'GET',
       }),
     }),
     getPokemonDetail: builder.query<
@@ -21,12 +26,15 @@ export const pokemonApi = api.injectEndpoints({
     >({
       query: ({ name }) => ({
         url: `/pokemon/${name}`,
-        method: "GET",
+        method: 'GET',
       }),
     }),
   }),
 });
 
+/**
+ * Exported hooks for the application to use
+ */
 export const {
   useGetPokemonsQuery,
   useLazyGetPokemonsQuery,

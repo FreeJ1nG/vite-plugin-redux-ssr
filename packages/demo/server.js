@@ -1,6 +1,9 @@
-import express from "express";
-import fs from "fs";
-import { createServer as createViteServer } from "vite";
+// TODO: Remove console.logs later
+/* eslint-disable no-undef */
+import fs from 'node:fs';
+
+import express from 'express';
+import { createServer as createViteServer } from 'vite';
 
 const app = express();
 
@@ -8,19 +11,19 @@ const vite = await createViteServer({
   server: {
     middlewareMode: true,
   },
-  appType: "custom",
+  appType: 'custom',
 });
 
 app.use(vite.middlewares);
 
-app.use("*", async (req, res) => {
+app.use('*', async (req, res) => {
   const url = req.originalUrl;
 
   try {
-    let template = fs.readFileSync("./index.html", "utf-8");
+    let template = fs.readFileSync('./index.html', 'utf-8');
     template = await vite.transformIndexHtml(url, template);
 
-    const { render } = await vite.ssrLoadModule("./src/entry-server.tsx");
+    const { render } = await vite.ssrLoadModule('./src/entry-server.tsx');
 
     const appHtml = await render(url);
 
@@ -28,8 +31,9 @@ app.use("*", async (req, res) => {
 
     console.log(html);
 
-    res.status(200).set({ "Content-Type": "text/html" }).send(html);
-  } catch (e) {
+    res.status(200).set({ 'Content-Type': 'text/html' }).send(html);
+  }
+  catch (e) {
     // @ts-ignore
     vite.ssrFixStacktrace(e);
     // @ts-ignore

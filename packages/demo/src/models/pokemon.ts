@@ -1,3 +1,5 @@
+/* eslint-disable jsdoc/require-jsdoc */
+
 export interface Pokemon {
   name: string;
   url: string;

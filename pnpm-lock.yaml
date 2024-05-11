@@ -41,6 +41,12 @@ importers:
       redux:
         specifier: ^5.0.1
         version: 5.0.1
+      vite:
+        specifier: ^5.2.11
+        version: 5.2.11(@types/node@20.12.11)
+      vite-plugin-redux-ssr:
+        specifier: workspace:*
+        version: link:../plugin
     devDependencies:
       '@types/express':
         specifier: ^4.17.21
@@ -54,12 +60,6 @@ importers:
       '@types/react-dom':
         specifier: ^18.3.0
         version: 18.3.0
-      vite:
-        specifier: ^5.2.11
-        version: 5.2.11(@types/node@20.12.11)
-      vite-plugin-redux-ssr:
-        specifier: workspace:*
-        version: link:../plugin
 
   packages/plugin:
     devDependencies:

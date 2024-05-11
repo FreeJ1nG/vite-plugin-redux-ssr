@@ -1,27 +1,38 @@
-import { type Plugin as VitePlugin } from "vite";
-import { type Store } from "redux";
+import { type Store } from 'redux';
+import { type Plugin as VitePlugin } from 'vite';
 
+import { type InitStoreMetadata, STORE_DATA_SCRIPT_TAG } from './utils.js';
+
+/**
+ * Options for the plugin
+ */
 export interface Options<AppStore extends Store> {
   /**
    * A store creator function that returns the type that
    * matches the store on the consumer's side
    */
-  makeStore: (preloadedState?: ReturnType<AppStore["getState"]>) => AppStore;
+  makeStore: (preloadedState?: ReturnType<AppStore['getState']>) => AppStore;
+  /**
+   * Contains metadata for which store initialization will occur on each page
+   */
+  pages: InitStoreMetadata;
 }
 
 /**
  * Some examples can be seen from @hi-ogawa's implementation for `vite-plugin-ssr-css`
  * https://github.com/hi-ogawa/vite-plugins/blob/main/packages/ssr-css/src/plugin.ts
  */
-
 export const plugin = <AppStore extends Store>({
   makeStore,
+  pages,
 }: Options<AppStore>): VitePlugin => {
-  let initialData: ReturnType<AppStore["getState"]> | undefined = undefined;
+  console.log(pages);
+  const initialData: ReturnType<AppStore['getState']> | undefined = undefined;
   return {
-    name: "vite-plugin-redux-ssr",
-    enforce: "pre",
-    load(id, options) {
+    name: 'vite-plugin-redux-ssr',
+    enforce: 'pre',
+    load(id) {
+      console.log(id);
       /**
        * TODO
        * - Parse comment config and create a store on the server side
@@ -31,7 +42,8 @@ export const plugin = <AppStore extends Store>({
        */
     },
     transformIndexHtml: {
-      handler: () => {
+      handler: (_html, { path, filename }) => {
+        console.log(' >>', path, filename);
         /*
          * TODO
          * - Pull initial data from loaded files
@@ -40,11 +52,11 @@ export const plugin = <AppStore extends Store>({
         const store = makeStore(initialData);
         return [
           {
-            tag: "script",
-            injectTo: "body",
+            tag: 'script',
+            injectTo: 'body',
             attrs: {
-              id: "__STORE_DATA__",
-              type: "application/json",
+              id: STORE_DATA_SCRIPT_TAG,
+              type: 'application/json',
             },
             children: JSON.stringify(store.getState()),
           },
