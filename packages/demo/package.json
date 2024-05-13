@@ -5,7 +5,8 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
-    "dev": "SERVER_PORT=5001 node server.js"
+    "build:express": "rm -rf dist && tsc -p ./tsconfig.server.json",
+    "dev": "pnpm run build:express && SERVER_PORT=5001 node ./dist/server.js"
   },
   "keywords": [],
   "author": "",
@@ -24,6 +25,7 @@
     "react-dom": "^18.3.1",
     "react-redux": "^9.1.2",
     "redux": "^5.0.1",
+    "ts-node": "^10.9.2",
     "vite": "^5.2.11",
     "vite-plugin-redux-ssr": "workspace:*"
   }

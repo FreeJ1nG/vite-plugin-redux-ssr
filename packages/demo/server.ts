@@ -1,5 +1,6 @@
 // TODO: Remove console.logs later
 /* eslint-disable no-undef */
+/* eslint-disable @typescript-eslint/no-misused-promises */
 import fs from 'node:fs';
 
 import express from 'express';
@@ -18,26 +19,21 @@ app.use(vite.middlewares);
 
 app.use('*', async (req, res) => {
   const url = req.originalUrl;
+  if (url === '/favicon.ico') return;
 
   try {
     let template = fs.readFileSync('./index.html', 'utf-8');
-    template = await vite.transformIndexHtml(url, template);
-
     const { render } = await vite.ssrLoadModule('./src/entry-server.tsx');
-
+    template = await vite.transformIndexHtml(url, template);
+    console.log(' 😍', template);
     const appHtml = await render(url);
-
-    let html = template.replace(`<!--ssr-outlet-->`, appHtml);
-
-    console.log(html);
-
+    const html = template.replace(`<!--ssr-outlet-->`, appHtml);
     res.status(200).set({ 'Content-Type': 'text/html' }).send(html);
   }
   catch (e) {
-    // @ts-ignore
-    vite.ssrFixStacktrace(e);
-    // @ts-ignore
-    res.status(500).end(e.stack);
+    const err = e as Error;
+    vite.ssrFixStacktrace(err);
+    res.status(500).end(err.stack);
   }
 });
 

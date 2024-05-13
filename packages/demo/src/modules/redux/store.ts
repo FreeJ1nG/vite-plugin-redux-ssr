@@ -1,4 +1,8 @@
-import { type Action, configureStore, type ThunkDispatch } from '@reduxjs/toolkit';
+import {
+  type Action,
+  configureStore,
+  type ThunkDispatch,
+} from '@reduxjs/toolkit';
 import { useDispatch, useStore } from 'react-redux';
 
 import api from './api.js';
@@ -7,14 +11,17 @@ import { reducer } from './reducer.js';
 /**
  * A store creator function that supports HMR for replacing it's reducers
  */
-export const makeStore = (preloadedState?: ReturnType<typeof reducer>) => {
+export const makeStore = (
+  preloadedState?: ReturnType<typeof reducer>,
+  ssr: boolean = false,
+) => {
   const store = configureStore({
     preloadedState,
     reducer,
     middleware: (gdm) => gdm().concat(api.middleware),
   });
 
-  if (import.meta.hot) {
+  if (!ssr && import.meta.hot) {
     import.meta.hot.accept('./reducer.ts', () => {
       store.replaceReducer(reducer);
     });

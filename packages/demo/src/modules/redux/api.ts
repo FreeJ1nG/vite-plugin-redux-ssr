@@ -1,7 +1,7 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import { isHydrateAction } from 'vite-plugin-redux-ssr';
 
-import { type RootState } from './store.js';
+import { type RootState } from '@/modules/redux/store.js';
 
 const api = createApi({
   reducerPath: 'api',

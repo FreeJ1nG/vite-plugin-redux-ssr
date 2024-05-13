@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDomServer from 'react-dom/server';
 
-import App from './App.jsx';
+import App from './app.page.jsx';
 
 /**
  * A function that returns server-side rendered HTML
