@@ -2,10 +2,45 @@ import { isAbsolute, relative } from 'node:path';
 
 import { type ThunkAction } from '@reduxjs/toolkit';
 import { type Store } from 'redux';
-import { type Logger, type Plugin as VitePlugin } from 'vite';
+import {
+  type Alias,
+  type AliasOptions,
+  type HtmlTagDescriptor,
+  type Logger,
+  type Plugin as VitePlugin,
+} from 'vite';
 
+import { load as loadFile } from './load.js';
 import { STORE_DATA_SCRIPT_TAG, type StoreCreator } from './utils.js';
 import { cleanUrl } from './utils/clean-url.js';
+import { resolveStoreCreator } from './utils/resolve-store-creator.js';
+
+/**
+ * Simplified plugin definition
+ */
+export interface Plugin extends VitePlugin {
+  /**
+   * Simplified config resolution function
+   */
+  configResolved(config: {
+    logger: Pick<Logger, 'info' | 'warn' | 'error'>;
+    root: string;
+    resolve: { alias: Alias[] };
+  }): Promise<void>;
+  /**
+   * Simplified load function
+   */
+  load(id: string): Promise<void>;
+  /**
+   * Simplified transformIndexHtml hook
+   */
+  transformIndexHtml: {
+    handler: (
+      html: string,
+      ctx: { path: string; filename: string },
+    ) => Promise<HtmlTagDescriptor[]>;
+  };
+}
 
 /**
  * Options for the plugin
@@ -14,8 +49,15 @@ export interface Options<AppStore extends Store> {
   /**
    * A store creator function that returns the type that
    * matches the store on the consumer's side
+   * @param {RootState} `preloadedState` Initial state to fill the server side store
+   * @returns A typed redux store that has been filled with `preloadedState`
    */
-  createServerSideStore: StoreCreator<AppStore>;
+  createServerSideStore?: StoreCreator<AppStore>;
+  /**
+   * Relative/Absolute path to store config file
+   * Said file should contain a named export of `createServerSideStore`
+   */
+  storeConfigPath?: string;
 }
 
 /**
@@ -23,29 +65,32 @@ export interface Options<AppStore extends Store> {
  * https://github.com/hi-ogawa/vite-plugins/blob/main/packages/ssr-css/src/plugin.ts
  */
 export const plugin = <AppStore extends Store>({
-  createServerSideStore,
-}: Options<AppStore>): VitePlugin => {
-  const initialData: ReturnType<AppStore['getState']> | undefined = undefined;
-
+  createServerSideStore: userProvidedStoreCreator,
+  storeConfigPath,
+}: Options<AppStore>): Plugin => {
   let config: {
-    logger: Pick<Logger, 'info' | 'warn'>;
+    logger: Pick<Logger, 'info' | 'warn' | 'error'>;
     root: string;
+    readonly alias: (AliasOptions | undefined) & Alias[];
   };
+
+  let createServerSideStore: StoreCreator<AppStore>;
 
   const routeInitMap: Map<string, ThunkAction<any, any, any, any>[]>
     = new Map();
 
-  const log = (msg: string, type: 'info' | 'warn'): void => {
+  const log = (msg: string, type: 'info' | 'warn' | 'error'): void => {
     config.logger[type](`[vite-plugin-redux-ssr] ${msg}`);
   };
 
   return {
     name: 'vite-plugin-redux-ssr',
     enforce: 'pre',
-    configResolved({ logger, root }) {
+    async configResolved({ logger, root, resolve: { alias } }) {
       config = {
         logger,
         root,
+        alias,
       };
     },
     async load(id) {
@@ -57,12 +102,7 @@ export const plugin = <AppStore extends Store>({
 
       log(relative(config.root, id), 'info');
 
-      const exports = (await import(/* @vite-ignore */ id)) as Record<
-        string,
-        unknown
-      >;
-
-      const { initStore: initStoreFn } = exports;
+      const { initStore: initStoreFn } = await loadFile(id, config.alias);
 
       if (!initStoreFn) {
         log(
@@ -80,12 +120,12 @@ export const plugin = <AppStore extends Store>({
         return;
       }
 
-      const { route, load } = initStoreFn() as {
+      const { route, load: actions } = initStoreFn() as {
         route: string;
         load: ThunkAction<any, any, any, any>[];
       };
 
-      if (!load || !route) {
+      if (!actions || !route) {
         log(
           `(${relative(config.root, id)}) initStore function must return a load array and a route string`,
           'warn',
@@ -93,27 +133,18 @@ export const plugin = <AppStore extends Store>({
         return;
       }
 
-      routeInitMap.set(route, load);
-
-      /**
-       * TODO
-       * - Parse comment config and create a store on the server side
-       * - Initialize the endpoints that need to be initialized
-       * - Serialize the content of the store with fetched data
-       * - Return the modified code with a <script>{JSON.stringify(serializedStore)}</script>
-       */
+      routeInitMap.set(route, actions);
     },
     transformIndexHtml: {
-      order: 'post',
-      handler: (_html, { path, filename }) => {
+      handler: async (_html, { path, filename }) => {
         console.log(' ::', path, filename);
         console.log(' ::', routeInitMap);
-        /**
-         * TODO
-         * - Pull initial data from loaded files
-         * - Check wether script gets appended to index.html as expected
-         */
-        const store = createServerSideStore(initialData);
+        createServerSideStore = await resolveStoreCreator({
+          createServerSideStore: userProvidedStoreCreator,
+          storeConfigPath,
+          projectRoot: config.root,
+        });
+        const store = createServerSideStore();
         return [
           {
             tag: 'script',

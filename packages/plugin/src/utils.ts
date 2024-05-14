@@ -39,6 +39,28 @@ export const isHydrateAction = <RootState>(
 };
 
 /**
+ * Utility function to assert that a function is a store creator function
+ * @param {Function} fn Takes in any function
+ */
+export const isStoreCreator = <AppStore extends Store>(
+  fn: Function,
+): fn is StoreCreator<AppStore> => {
+  try {
+    const store = fn(undefined);
+    return (
+      typeof store === 'object'
+      && typeof store.dispatch === 'function'
+      && typeof store.getState === 'function'
+      && typeof store.subscribe === 'function'
+      && typeof store.replaceReducer === 'function'
+    );
+  }
+  catch {
+    return false;
+  }
+};
+
+/**
  * A utility function that should only be used by library consumer to export server-side store data
  * @param {Function} makeStore - A store creator function that returns an AppStore instance
  */
